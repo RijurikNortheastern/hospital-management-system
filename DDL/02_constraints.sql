@@ -1,8 +1,4 @@
--- =============================================
 -- Constraints: UNIQUE, CHECK, FOREIGN KEYS
--- Run as: hms_admin
--- Run AFTER 01_create_tables.sql
--- =============================================
 
 -- UNIQUE constraints
 ALTER TABLE PATIENT ADD CONSTRAINT PATIENT_email_UN UNIQUE (email);

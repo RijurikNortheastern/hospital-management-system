@@ -1,7 +1,6 @@
--- =============================================
+
 -- CREATE TABLES + PRIMARY KEYS
--- Run as: hms_admin
--- =============================================
+
 
 -- 1. Independent tables (no FKs to other tables)
 CREATE TABLE DEPARTMENT (
