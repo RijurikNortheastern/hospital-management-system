@@ -1,35 +1,66 @@
--- =========================
--- TEST CASE 1: Book appointment (SUCCESS)
--- =========================
-EXEC book_appointment(1, 1, TO_DATE('2026-04-25','YYYY-MM-DD'), SYSDATE, 'General checkup');
-
-
--- =========================
--- TEST CASE 2: Duplicate booking (FAIL)
--- =========================
--- Should throw: Duplicate booking not allowed
-EXEC book_appointment(1, 1, TO_DATE('2026-04-25','YYYY-MM-DD'), SYSDATE, 'Duplicate test');
-
+-- =========================================================
+-- TEST CASES FOR HOSPITAL MANAGEMENT SYSTEM
+-- Demonstrates business rules, validations, and transactions
+-- =========================================================
 
 -- =========================
--- TEST CASE 3: Cancel appointment (>24 hrs)
+-- 1. BOOK APPOINTMENT
 -- =========================
-EXEC cancel_appointment(1);
 
+-- SUCCESS CASE: valid booking
+BEGIN
+    book_appointment(1, 1, TO_DATE('2026-04-25','YYYY-MM-DD'), SYSDATE, 'Regular checkup');
+END;
+/
 
--- =========================
--- TEST CASE 4: Admit patient (SUCCESS)
--- =========================
-EXEC admit_patient(1, 1, 1, 'Fever admission');
-
-
--- =========================
--- TEST CASE 5: Admit patient to occupied bed (FAIL)
--- =========================
-EXEC admit_patient(2, 1, 1, 'Second admission test');
-
+-- FAILURE CASE: duplicate booking (expected ORA-20001)
+BEGIN
+    book_appointment(1, 1, TO_DATE('2026-04-25','YYYY-MM-DD'), SYSDATE, 'Duplicate test');
+END;
+/
 
 -- =========================
--- TEST CASE 6: Generate bill (with insurance)
+-- 2. CANCEL APPOINTMENT
 -- =========================
-EXEC generate_bill(1, 5000, 1, NULL);
+
+-- FAILURE CASE: cancel within 24 hours (expected ORA-20004)
+BEGIN
+    cancel_appointment(1);
+END;
+/
+
+-- =========================
+-- 3. ADMIT PATIENT
+-- =========================
+
+-- FAILURE CASE: bed already occupied (expected ORA-20010)
+BEGIN
+    admit_patient(1, 1, 1, 'Fever admission');
+END;
+/
+
+-- =========================
+-- 4. GENERATE BILL
+-- =========================
+
+-- FAILURE CASE: NULL total amount (expected ORA-20030)
+BEGIN
+    generate_bill(1, 1, NULL, NULL);
+END;
+/
+
+-- SUCCESS CASE: valid billing with amount
+BEGIN
+    generate_bill(1, 1, NULL, 5000);
+END;
+/
+
+-- =========================
+-- 5. RESCHEDULE APPOINTMENT
+-- =========================
+
+-- FAILURE CASE: slot already booked
+BEGIN
+    reschedule_appointment(1, TO_DATE('2026-04-25','YYYY-MM-DD'), SYSDATE, 1);
+END;
+/
