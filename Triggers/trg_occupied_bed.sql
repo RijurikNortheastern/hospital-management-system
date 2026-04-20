@@ -1,0 +1,16 @@
+CREATE OR REPLACE TRIGGER trg_occupied_bed
+BEFORE INSERT ON ADMISSION
+FOR EACH ROW
+DECLARE
+    v_status CHAR(1);
+BEGIN
+    SELECT IS_OCCUPIED
+    INTO v_status
+    FROM BED
+    WHERE BED_ID = :NEW.BED_BED_ID;
+
+    IF v_status = 'Y' THEN
+        RAISE_APPLICATION_ERROR(-20002, 'Bed is already occupied');
+    END IF;
+END;
+/
