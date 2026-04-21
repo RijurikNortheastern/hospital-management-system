@@ -37,7 +37,10 @@ GRANT CREATE PROCEDURE      TO hms_admin;
 GRANT CREATE SEQUENCE       TO hms_admin;
 GRANT CREATE TRIGGER        TO hms_admin;
  
-DBMS_OUTPUT.PUT_LINE('hms_admin created and granted.');
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('hms_admin created and granted.');
+END;
+/
  
  
 -- =============================================================
@@ -49,13 +52,15 @@ CREATE USER hms_operator IDENTIFIED BY "HospitalOper2026#";
  
 GRANT CREATE SESSION TO hms_operator;
  
-DBMS_OUTPUT.PUT_LINE('hms_operator created and granted.');
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('hms_operator created and granted.');
+END;
+/
  
  
 -- =============================================================
 -- SECTION 4: OBJECT-LEVEL GRANTS TO OPERATOR
 -- Run AFTER all tables are created by hms_admin
--- NOTE: All 16 tables covered (including both bridge tables)
 -- =============================================================
  
 -- READ access (SELECT) on all 16 tables
@@ -83,7 +88,10 @@ GRANT INSERT, UPDATE ON hms_admin.ADMISSION   TO hms_operator;
 GRANT INSERT, UPDATE ON hms_admin.BILLING     TO hms_operator;
 GRANT INSERT, UPDATE ON hms_admin.PAYMENT     TO hms_operator;
  
-DBMS_OUTPUT.PUT_LINE('All object-level grants applied to hms_operator.');
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('All object-level grants applied to hms_operator.');
+END;
+/
  
  
 -- =============================================================
