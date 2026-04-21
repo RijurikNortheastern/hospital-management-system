@@ -25,15 +25,53 @@ Centralized database for hospital operations covering:
 
 ## Selected Module: Appointment Management
 
-## Folder Structure
-- DDL/ - Table creation, constraints, sequences
-- DML/ - Sample data insertion scripts (idempotent)
-- Procedures/ - Stored procedures for business logic
-- Triggers/ - Bed occupancy management triggers
-- Reports/ - 5 required reports
-- Security/ - User creation and grants
-- Tests/ - Test case scripts
-- run_all.sql - Master script to run full project
+## Project Structure
+```
+hospital-management-system/
+│
+├── Security/
+│   ├── 01_roles_and_grants.sql      # Create users and roles
+│   └── 02_operator_grants.sql       # Grant privileges after DDL
+│
+├── DDL/
+│   ├── 01_create_tables.sql         # 16 tables with PKs
+│   ├── 02_constraints.sql           # UNIQUE, CHECK, FK constraints
+│   └── 03_sequences.sql             # 16 sequences for PK generation
+│
+├── DML/
+│   ├── 01_insert_departments.sql    # 5 departments
+│   ├── 02_insert_employees.sql      # 23 employees
+│   ├── 03_insert_patients.sql       # 200 patients
+│   ├── 04_insert_rooms_beds.sql     # 50 rooms, 75 beds
+│   ├── 05_insert_insurance.sql      # 6 insurers, 100 links
+│   ├── 06_insert_schedules.sql      # Doctor schedules
+│   ├── 07_insert_appointments.sql   # 50 appointments
+│   ├── 08_insert_admissions.sql     # 10 admissions + billing
+│   ├── 09_insert_billing_payments.sql # Appointment billing
+│   └── 10_Data_Load_Verification.sql  # PASS/FAIL verification
+│
+├── Procedures/
+│   ├── 01_book_appointment.sql
+│   ├── 02_cancel_appointment.sql
+│   ├── 03_reschedule_appointment.sql
+│   ├── 04_admit_patient.sql
+│   └── 05_generate_bill.sql
+│
+├── Triggers/
+│   └── 01_trg_occupied_bed.sql      # 3 bed management triggers
+│
+├── Reports/
+│   ├── 01_daily_appointments.sql
+│   ├── 02_doctor_schedule.sql
+│   ├── 03_bed_occupancy.sql
+│   ├── 04_revenue_report.sql
+│   └── 05_cancellation_stats.sql
+│
+├── Tests/
+│   └── test_cases.sql               # 13 test cases
+│
+└── run_all.sql                      # Master script
+```
 
 ## How to Run
 
