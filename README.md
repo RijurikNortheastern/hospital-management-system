@@ -27,7 +27,7 @@ Centralized database for hospital operations covering:
 - EMPLOYEE_SCHEDULE: Resolves M:N between Employee and Doctor_Schedule
 - PATIENT_INSURANCE: Resolves M:N between Patient and Insurance
 
-## Selected Module: Appointment Management
+# Selected Module: Appointment Management
 
 ## Project Structure
 ```
