@@ -132,7 +132,7 @@ hospital-management-system/
 
 ## Team: Table Turners
 ```
-Rijurik Saha                 Arundhati Kandelkar
+Rijurik Saha        Arundhati Kandelkar
 DMDD 6210 - Table Turners SEC Spring 2026
 ```
 
