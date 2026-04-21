@@ -68,7 +68,7 @@ hospital-management-system/
 │   └── 05_cancellation_stats.sql
 │
 ├── Tests/
-│   └── test_cases.sql               # 13 test cases
+│   └── test_cases.sql               # 14 test cases
 │
 └── run_all.sql                      # Master script
 ```
