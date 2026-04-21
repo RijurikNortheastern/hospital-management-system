@@ -9,15 +9,19 @@ Centralized database for hospital operations covering:
 - Billing & Payments with Insurance bridge table
 
 ## Database
-- RDBMS: Oracle Autonomous Database (OCI)
-- Tables: 16 (including 2 bridge tables)
-- Foreign Keys: 22
-- CHECK Constraints: 13
-- UNIQUE Constraints: 5
-- Sequences: 16
-- Stored Procedures: 5
-- Triggers: 1 file (3 triggers)
-- Reports: 5
+
+| Component | Count | Details |
+|-----------|-------|---------|
+| RDBMS | — | Oracle Autonomous Database (OCI) |
+| Tables | 16 | Including 2 bridge tables |
+| Foreign Keys | 22 | Referential integrity constraints |
+| CHECK Constraints | 13 | Business rule validations |
+| UNIQUE Constraints | 5 | Duplicate prevention |
+| Sequences | 16 | One per table for PK generation |
+| Stored Procedures | 5 | Business logic implementation |
+| Triggers | 3 | Bed occupancy management (1 file) |
+| Reports | 5 | Operational and analytical reports |
+| Test Cases | 14 | All 14 passed  |
 
 ## Bridge Tables
 - EMPLOYEE_SCHEDULE: Resolves M:N between Employee and Doctor_Schedule
