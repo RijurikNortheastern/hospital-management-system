@@ -50,7 +50,7 @@ Centralized database for hospital operations covering:
    - Run `Tests/test_cases.sql`
 3. Connect as ADMIN: Run `Security/02_operator_grants.sql`
 
-### Option 2 — Run All at Once (Recommended)
+### Option 2 — Run All at Once
 1. Connect as ADMIN: Run `Security/01_roles_and_grants.sql`
 2. Connect as hms_admin: Run `run_all.sql`
 3. Connect as ADMIN: Run `Security/02_operator_grants.sql`
