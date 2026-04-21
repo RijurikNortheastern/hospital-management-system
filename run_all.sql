@@ -23,9 +23,7 @@
 @Procedures/05_generate_bill.sql
 
 -- Triggers
-@Triggers/01_trg_duplicate_booking.sql
-@Triggers/02_trg_insurance_discount.sql
-@Triggers/03_trg_occupied_bed.sql
+@Triggers/01_trg_occupied_bed.sql
 
 -- Tests
 @Tests/test_cases.sql
