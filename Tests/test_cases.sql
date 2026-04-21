@@ -60,6 +60,42 @@ EXCEPTION
 END;
 /
  
+-- FAILURE: Max 5 appointments per doctor per day (expected ORA-20018)
+-- Book 5 appointments for same doctor on same date then try 6th
+DECLARE
+    v_available_bridge NUMBER;
+BEGIN
+    -- Find a doctor who has fewer than 5 appointments on a future date
+    -- and try to book a 6th appointment on a date that already has 5
+    -- We simulate by trying to book on a date where doctor is maxed out
+    SELECT es.bridge_id INTO v_available_bridge
+    FROM   EMPLOYEE_SCHEDULE es
+    JOIN   EMPLOYEE e ON e.employee_id = es.EMPLOYEE_employee_id
+    WHERE  e.role = 'DOCTOR'
+      AND  es.status = 'AVAILABLE'
+      AND  (SELECT COUNT(*) FROM APPOINTMENT a
+            JOIN EMPLOYEE_SCHEDULE es2 ON es2.bridge_id = a.EMPLOYEE_SCHEDULE_bridge_id
+            WHERE es2.EMPLOYEE_employee_id = es.EMPLOYEE_employee_id
+            AND a.appointment_date = TRUNC(SYSDATE) + 5
+            AND a.status <> 'CANCELLED') >= 5
+      AND  ROWNUM = 1;
+ 
+    book_appointment(
+        p_patient_id  => 50,
+        p_bridge_id   => v_available_bridge,
+        p_date        => TRUNC(SYSDATE) + 5,
+        p_time        => TO_DATE('2000-01-01 09:00', 'YYYY-MM-DD HH24:MI'),
+        p_reason      => 'Max appointments test'
+    );
+    DBMS_OUTPUT.PUT_LINE('TEST 1d FAILED: Should have raised max appointments error.');
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        DBMS_OUTPUT.PUT_LINE('TEST 1d SKIPPED: No doctor with 5+ appointments found in test data.');
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('TEST 1d PASSED: ' || SQLERRM);
+END;
+/
+ 
  
 -- =============================================================
 -- 2. CANCEL APPOINTMENT

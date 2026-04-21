@@ -9,6 +9,7 @@
 --   3. Employee linked to slot must be a DOCTOR
 --   4. No duplicate booking (same patient + slot + date + time)
 --   5. Doctor must not be on approved vacation on that date
+--   6. Doctor cannot have more than 5 appointments per day
 -- CALLED BY: hms_operator or application layer
 -- =============================================================
  
@@ -109,6 +110,27 @@ BEGIN
     IF v_vacation_cnt > 0 THEN
         RAISE_APPLICATION_ERROR(-20017,
             'Doctor is on approved vacation on ' || TO_CHAR(p_date, 'YYYY-MM-DD') || '.');
+    END IF;
+ 
+    -- ──────────────────────────────────────────────────────────
+    -- VALIDATION 6: Doctor cannot have more than 5 appointments
+    --               per day (business rule from Part 1)
+    -- ──────────────────────────────────────────────────────────
+    SELECT COUNT(*) INTO v_count
+    FROM   APPOINTMENT a
+    JOIN   EMPLOYEE_SCHEDULE es ON es.bridge_id = a.EMPLOYEE_SCHEDULE_bridge_id
+    WHERE  es.EMPLOYEE_employee_id = (
+               SELECT es2.EMPLOYEE_employee_id
+               FROM   EMPLOYEE_SCHEDULE es2
+               WHERE  es2.bridge_id = p_bridge_id
+           )
+      AND  a.appointment_date = p_date
+      AND  a.status NOT IN ('CANCELLED');
+ 
+    IF v_count >= 5 THEN
+        RAISE_APPLICATION_ERROR(-20018,
+            'Doctor already has 5 appointments on ' ||
+            TO_CHAR(p_date, 'YYYY-MM-DD') || '. Maximum limit reached.');
     END IF;
  
     -- ──────────────────────────────────────────────────────────
