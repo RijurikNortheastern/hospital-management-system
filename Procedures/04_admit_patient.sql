@@ -10,7 +10,7 @@
 --   4. Employee must exist and must be a DOCTOR
 -- SIDE EFFECTS:
 --   - Inserts ADMISSION row with status ACTIVE
---   - Updates BED.is_occupied = 'Y'
+--   - BED.is_occupied updated by trg_mark_bed_occupied trigger
 -- =============================================================
  
 CREATE OR REPLACE PROCEDURE admit_patient (
@@ -116,14 +116,6 @@ BEGIN
         p_patient_id,
         p_employee_id
     );
- 
-    -- ──────────────────────────────────────────────────────────
-    -- MARK BED AS OCCUPIED
-    --      incorrectly marked occupied. ROLLBACK handles cleanup.
-    -- ──────────────────────────────────────────────────────────
-    UPDATE BED
-    SET    is_occupied = 'Y'
-    WHERE  bed_id = p_bed_id;
  
     COMMIT;
  
