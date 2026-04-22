@@ -8,7 +8,7 @@ Centralized database for hospital operations covering:
 - Admission & Bed Management
 - Billing & Payments with Insurance bridge table
 
-## Database
+## Database :
 
 | Component | Count | Details |
 |-----------|-------|---------|
@@ -23,7 +23,10 @@ Centralized database for hospital operations covering:
 | Reports | 5 | Operational and analytical reports |
 | Test Cases | 14 | All 14 passed  |
 
-## Bridge Tables
+## ER Diagram :
+![HMS ERD](Docs/HMS_ERD.png)
+
+## Bridge Tables :
 - EMPLOYEE_SCHEDULE: Resolves M:N between Employee and Doctor_Schedule
 - PATIENT_INSURANCE: Resolves M:N between Patient and Insurance
 
@@ -31,7 +34,7 @@ Centralized database for hospital operations covering:
 ## Complete appointment booking flow:
 ```
 ╔══════════════════════════════════════════════════════════════╗
-║           APPOINTMENT MANAGEMENT - BUSINESS FLOW            ║
+║           APPOINTMENT MANAGEMENT - BUSINESS FLOW             ║
 ║                  Hospital Management System                  ║
 ╚══════════════════════════════════════════════════════════════╝
 
@@ -58,11 +61,11 @@ Centralized database for hospital operations covering:
          │                   │
          ▼                   ▼
    ┌───────────┐    ┌─────────────────────┐
-   │ ORA-20xxx │    │ APPOINTMENT created  │
-   │  Error    │    │ status = SCHEDULED   │
-   └───────────┘    │ EMPLOYEE_SCHEDULE    │
-                    │ status = UNAVAILABLE │
-                    │ HISTORY → CREATED    │
+   │ ORA-20xxx │    │ APPOINTMENT created │
+   │  Error    │    │ status = SCHEDULED  │
+   └───────────┘    │ EMPLOYEE_SCHEDULE   │
+                    │ status = UNAVAILABLE│
+                    │ HISTORY → CREATED   │
                     └──────────┬──────────┘
                                │
                     ┌──────────┴──────────┐
@@ -74,7 +77,7 @@ Centralized database for hospital operations covering:
           └──────┬───────┘      └────────┬─────────┘
                  │                       │
                  ▼                       ▼
-    ┌────────────────────┐  ┌────────────────────────┐
+    ┌────────────────────┐  ┌─────────────────────────┐
     │ cancel_appointment │  │ reschedule_appointment  │
     │                    │  │                         │
     │ Check: 24hr rule   │  │ Check: Not CANCELLED    │
@@ -85,11 +88,11 @@ Centralized database for hospital operations covering:
     └──────────┬─────────┘  └────────────┬────────────┘
                │                         │
                ▼                         ▼
-    ┌─────────────────────┐  ┌─────────────────────────┐
+    ┌─────────────────────┐  ┌──────────────────────────┐
     │ status = CANCELLED  │  │ status = RESCHEDULED     │
     │ Old slot → AVAILABLE│  │ Old slot → AVAILABLE     │
     │ HISTORY → CANCELLED │  │ New slot → UNAVAILABLE   │
-    └─────────────────────┘  │ HISTORY → RESCHEDULED   │
+    └─────────────────────┘  │ HISTORY → RESCHEDULED    │
                               └─────────────────────────┘
                                           │
                                ┌──────────┘
@@ -105,19 +108,19 @@ Centralized database for hospital operations covering:
                     │                     │
                     ▼                     ▼
           ┌──────────────┐      ┌──────────────────┐
-          │  OUTPATIENT  │      │    INPATIENT      │
-          │ Consultation │      │  Needs Admission  │
+          │  OUTPATIENT  │      │    INPATIENT     │
+          │ Consultation │      │  Needs Admission │
           └──────┬───────┘      └────────┬─────────┘
                  │                       │
                  ▼                       ▼
-    ┌────────────────────┐  ┌────────────────────────┐
+    ┌────────────────────┐  ┌─────────────────────────┐
     │  generate_bill()   │  │   admit_patient()       │
     │                    │  │                         │
     │ Lookup insurance   │  │ Check: Bed available    │
     │ Apply discount     │  │ Check: Doctor role      │
     │ Create BILL        │  │ Check: Not admitted     │
     │ status = PENDING   │  │ INSERT ADMISSION        │
-    └──────────┬─────────┘  │ Trigger → BED occupied │
+    └──────────┬─────────┘  │ Trigger → BED occupied  │
                │            └────────────┬────────────┘
                ▼                         │
     ┌─────────────────────┐              ▼
@@ -127,7 +130,7 @@ Centralized database for hospital operations covering:
     └─────────────────────┘   │ generate_bill()     │
                               └─────────────────────┘
 ```
-## Project Structure
+## Project Structure:
 ```
 hospital-management-system/
 │
@@ -175,9 +178,9 @@ hospital-management-system/
 └── run_all.sql                      # Master script
 ```
 
-## How to Run
+## How to Run :
 
-### Option 1 — Run File by File
+### Option 1 — Run File by File :
 1. Connect as ADMIN: Run `Security/01_roles_and_grants.sql`
 2. Connect as hms_admin:
    - Run `DDL/01_create_tables.sql`
@@ -190,28 +193,28 @@ hospital-management-system/
    - Run `Tests/test_cases.sql`
 3. Connect as ADMIN: Run `Security/02_operator_grants.sql`
 
-### Option 2 — Run All at Once
+### Option 2 — Run All at Once :
 1. Connect as ADMIN: Run `Security/01_roles_and_grants.sql`
 2. Connect as hms_admin: Run `run_all.sql`
 3. Connect as ADMIN: Run `Security/02_operator_grants.sql`
 
-## Stored Procedures
+## Stored Procedures :
 | # | Procedure | Description |
 |---|-----------|-------------|
-| 01 | book_appointment | Books appointment with 5 validations |
+| 01 | book_appointment | Books appointment with 6 validations |
 | 02 | cancel_appointment | Cancels with 24-hour rule |
 | 03 | reschedule_appointment | Reschedules with slot management |
 | 04 | admit_patient | Admits patient with doctor validation |
 | 05 | generate_bill | Generates bill with insurance discount |
 
-## Triggers
+## Triggers :
 | Trigger | Type | Description |
 |---------|------|-------------|
 | trg_occupied_bed | BEFORE INSERT | Blocks admission to occupied bed |
 | trg_mark_bed_occupied | AFTER INSERT | Marks bed occupied after admission |
 | trg_release_bed_on_discharge | AFTER UPDATE | Releases bed when patient discharged |
 
-## Data Requirements
+## Data Requirements :
 - 200 Patients (180 adults + 20 minors with guardians)
 - 23 Employees (15 Doctors + 5 Nurses + 3 Admin)
 - 50 Appointments
@@ -219,14 +222,14 @@ hospital-management-system/
 - 50 Rooms with 75 Beds
 - 18 Bills + 14 Payments
 
-## Users
+## Users :
 | User | Role | Access |
 |------|------|--------|
 | hmsdbadmin | Database Admin | Full system access — runs Security scripts |
 | hms_admin | Schema Owner | Full DDL + DML — runs all project scripts |
 | hms_operator | Operator | SELECT all tables + INSERT/UPDATE operational tables |
 
-## Responsibilities
+## Responsibilities :
 | Name | Responsibility |
 |------|---------------|
 | Rijurik Saha | ER Diagram, DDL Script, Reports |
