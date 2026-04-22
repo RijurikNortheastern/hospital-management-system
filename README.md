@@ -201,7 +201,7 @@ hospital-management-system/
 ## Stored Procedures :
 | # | Procedure | Description |
 |---|-----------|-------------|
-| 01 | book_appointment | Books appointment with 5 validations |
+| 01 | book_appointment | Books appointment with 6 validations |
 | 02 | cancel_appointment | Cancels with 24-hour rule |
 | 03 | reschedule_appointment | Reschedules with slot management |
 | 04 | admit_patient | Admits patient with doctor validation |
