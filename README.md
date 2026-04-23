@@ -52,7 +52,7 @@ Centralized database for hospital operations covering:
 │  Validation 3: Employee is DOCTOR?      │
 │  Validation 4: No duplicate booking?    │
 │  Validation 5: Doctor not on vacation?  │
-│  Validation 6: Doctor <= 5 appts/day?    │
+│  Validation 6: Doctor <= 5 appts/day?   │
 └──────────────────┬──────────────────────┘
                    │
          ┌─────────┴─────────┐
@@ -66,69 +66,69 @@ Centralized database for hospital operations covering:
    └───────────┘    │ EMPLOYEE_SCHEDULE   │
                     │ status = UNAVAILABLE│
                     │ HISTORY → CREATED   │
-                    └──────────┬──────────┘
-                               │
-                    ┌──────────┴──────────┐
-                    │                     │
-                    ▼                     ▼
-          ┌──────────────┐      ┌──────────────────┐
-          │    CANCEL    │      │   RESCHEDULE     │
-          │ appointment  │      │  appointment     │
-          └──────┬───────┘      └────────┬─────────┘
-                 │                       │
-                 ▼                       ▼
-    ┌────────────────────┐  ┌─────────────────────────┐
-    │ cancel_appointment │  │ reschedule_appointment  │
-    │                    │  │                         │
-    │ Check: 24hr rule   │  │ Check: Not CANCELLED    │
-    │ Check: Not already │  │ Check: New slot free    │
-    │        CANCELLED   │  │ Check: Doctor available │
-    │ Check: Not         │  │ Check: Not on vacation  │
-    │        COMPLETED   │  │                         │
-    └──────────┬─────────┘  └────────────┬────────────┘
-               │                         │
-               ▼                         ▼
-    ┌─────────────────────┐  ┌──────────────────────────┐
-    │ status = CANCELLED  │  │ status = RESCHEDULED     │
-    │ Old slot → AVAILABLE│  │ Old slot → AVAILABLE     │
-    │ HISTORY → CANCELLED │  │ New slot → UNAVAILABLE   │
-    └─────────────────────┘  │ HISTORY → RESCHEDULED    │
-                              └─────────────────────────┘
+                    └──────┬──────────────┘
+                           │
+              ┌────────────┼────────────────┐
+              │            │                │
+              ▼            ▼                ▼
+     ┌──────────────┐  ┌──────────────┐  ┌─────────────────┐
+     │    CANCEL    │  │  RESCHEDULE  │  │   COMPLETED     │
+     │ appointment  │  │ appointment  │  │ (Patient shows  │
+     └──────┬───────┘  └──────┬───────┘  │   up directly)  │
+            │                 │          └──────────────┬──┘
+            ▼                 ▼                         │
+┌────────────────────┐  ┌─────────────────────────┐     │
+│ cancel_appointment │  │ reschedule_appointment  │     │
+│                    │  │                         │     │
+│ Check: 24hr rule   │  │ Check: Not CANCELLED    │     │
+│ Check: Not already │  │ Check: New slot free    │     │
+│        CANCELLED   │  │ Check: Doctor available │     │
+│ Check: Not         │  │ Check: Not on vacation  │     │
+│        COMPLETED   │  │                         │     │
+└──────────┬─────────┘  └────────────┬────────────┘     │
+           │                         │                  │
+           ▼                         ▼                  │
+┌─────────────────────┐  ┌──────────────────────────┐   │
+│ status = CANCELLED  │  │ status = RESCHEDULED     │   │
+│ Old slot → AVAILABLE│  │ Old slot → AVAILABLE     │   │
+│ HISTORY → CANCELLED │  │ New slot → UNAVAILABLE   │   │
+└─────────────────────┘  │ HISTORY → RESCHEDULED    │   │
+                         └─────────────┬────────────┘   │
+                                       │                │
+                                       └──────┬─────────┘
+                                              │
+                                              ▼
+                               ┌─────────────────────┐
+                               │  APPOINTMENT        │
+                               │  COMPLETED          │
+                               │  status = COMPLETED │
+                               └──────────┬──────────┘
                                           │
-                               ┌──────────┘
-                               │
-                               ▼
-                    ┌─────────────────────┐
-                    │  APPOINTMENT        │
-                    │  COMPLETED          │
-                    │  status = COMPLETED │
-                    └──────────┬──────────┘
-                               │
-                    ┌──────────┴──────────┐
-                    │                     │
-                    ▼                     ▼
-          ┌──────────────┐      ┌──────────────────┐
-          │  OUTPATIENT  │      │    INPATIENT     │
-          │ Consultation │      │  Needs Admission │
-          └──────┬───────┘      └────────┬─────────┘
-                 │                       │
-                 ▼                       ▼
-    ┌────────────────────┐  ┌─────────────────────────┐
-    │  generate_bill()   │  │   admit_patient()       │
-    │                    │  │                         │
-    │ Lookup insurance   │  │ Check: Bed available    │
-    │ Apply discount     │  │ Check: Doctor role      │
-    │ Create BILL        │  │ Check: Not admitted     │
-    │ status = PENDING   │  │ INSERT ADMISSION        │
-    └──────────┬─────────┘  │ Trigger → BED occupied  │
-               │            └────────────┬────────────┘
-               ▼                         │
-    ┌─────────────────────┐              ▼
-    │    PAYMENT          │   ┌─────────────────────┐
-    │  method: CASH/CARD/ │   │   ON DISCHARGE      │
-    │  INSURANCE/CREDIT   │   │ Trigger → BED freed │
-    └─────────────────────┘   │ generate_bill()     │
-                              └─────────────────────┘
+                               ┌──────────┴──────────┐
+                               │                     │
+                               ▼                     ▼
+                     ┌──────────────┐      ┌──────────────────┐
+                     │  OUTPATIENT  │      │    INPATIENT     │
+                     │ Consultation │      │  Needs Admission │
+                     └──────┬───────┘      └────────┬─────────┘
+                            │                       │
+                            ▼                       ▼
+             ┌────────────────────┐  ┌─────────────────────────┐
+             │  generate_bill()   │  │   admit_patient()       │
+             │                    │  │                         │
+             │ Lookup insurance   │  │ Check: Bed available    │
+             │ Apply discount     │  │ Check: Doctor role      │
+             │ Create BILL        │  │ Check: Not admitted     │
+             │ status = PENDING   │  │ INSERT ADMISSION        │
+             └──────────┬─────────┘  │ Trigger → BED occupied  │
+                        │            └────────────┬────────────┘
+                        ▼                         │
+             ┌─────────────────────┐              ▼
+             │    PAYMENT          │   ┌─────────────────────┐
+             │  method: CASH/CARD/ │   │   ON DISCHARGE      │
+             │  INSURANCE/CREDIT   │   │ Trigger → BED freed │
+             └─────────────────────┘   │ generate_bill()     │
+                                       └─────────────────────┘
 ```
 ## Project Structure:
 ```
