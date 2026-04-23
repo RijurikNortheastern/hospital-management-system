@@ -52,7 +52,7 @@ Centralized database for hospital operations covering:
 │  Validation 3: Employee is DOCTOR?      │
 │  Validation 4: No duplicate booking?    │
 │  Validation 5: Doctor not on vacation?  │
-│  Validation 6: Doctor < 5 appts/day?    │
+│  Validation 6: Doctor <= 5 appts/day?    │
 └──────────────────┬──────────────────────┘
                    │
          ┌─────────┴─────────┐
