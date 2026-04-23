@@ -3,7 +3,7 @@
 -- PROJECT: Hospital Management System (DMDD 6210 - Table Turners)
 -- RUN AS : hms_admin
 -- PURPOSE: Test cases demonstrating business rule validations
---          for all 5 stored procedures
+--          for all 6 stored procedures including emergency module
 -- =============================================================
  
 SET SERVEROUTPUT ON;
@@ -61,13 +61,9 @@ END;
 /
  
 -- FAILURE: Max 5 appointments per doctor per day (expected ORA-20018)
--- Book 5 appointments for same doctor on same date then try 6th
 DECLARE
     v_available_bridge NUMBER;
 BEGIN
-    -- Find a doctor who has fewer than 5 appointments on a future date
-    -- and try to book a 6th appointment on a date that already has 5
-    -- We simulate by trying to book on a date where doctor is maxed out
     SELECT es.bridge_id INTO v_available_bridge
     FROM   EMPLOYEE_SCHEDULE es
     JOIN   EMPLOYEE e ON e.employee_id = es.EMPLOYEE_employee_id
@@ -262,6 +258,133 @@ END;
  
  
 -- =============================================================
+-- 6. BOOK EMERGENCY
+-- =============================================================
+ 
+-- SUCCESS: Valid emergency booking — full flow
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('TEST 6a: Valid emergency booking - full flow');
+    book_emergency(
+        p_patient_id => 1,
+        p_dept_id    => 1,
+        p_reason     => 'Chest pain - emergency',
+        p_date       => TRUNC(SYSDATE)
+    );
+    DBMS_OUTPUT.PUT_LINE('TEST 6a PASSED: Emergency complete - appointment + admission + bill created.');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('TEST 6a FAILED: ' || SQLERRM);
+END;
+/
+ 
+-- FAILURE: Non-existent patient (expected ORA-20060)
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('TEST 6b: Non-existent patient emergency');
+    book_emergency(
+        p_patient_id => 9999,
+        p_dept_id    => 1,
+        p_reason     => 'Test',
+        p_date       => TRUNC(SYSDATE)
+    );
+    DBMS_OUTPUT.PUT_LINE('TEST 6b FAILED: Should have raised patient not found error.');
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE = -20060 THEN
+            DBMS_OUTPUT.PUT_LINE('TEST 6b PASSED: ORA-20060 - ' || SQLERRM);
+        ELSE
+            DBMS_OUTPUT.PUT_LINE('TEST 6b FAILED: Wrong error - ' || SQLERRM);
+        END IF;
+END;
+/
+ 
+-- FAILURE: Invalid department (expected ORA-20061)
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('TEST 6c: No doctors in department');
+    book_emergency(
+        p_patient_id => 1,
+        p_dept_id    => 9999,
+        p_reason     => 'Test',
+        p_date       => TRUNC(SYSDATE)
+    );
+    DBMS_OUTPUT.PUT_LINE('TEST 6c FAILED: Should have raised no doctor error.');
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE = -20061 THEN
+            DBMS_OUTPUT.PUT_LINE('TEST 6c PASSED: ORA-20061 - ' || SQLERRM);
+        ELSE
+            DBMS_OUTPUT.PUT_LINE('TEST 6c FAILED: Wrong error - ' || SQLERRM);
+        END IF;
+END;
+/
+ 
+-- SUCCESS: Verify ICU bed assigned
+DECLARE
+    v_bed_type       VARCHAR2(20);
+    v_admission_type VARCHAR2(20);
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('TEST 6d: ICU bed priority check');
+    SELECT r.room_type, a.admission_type
+    INTO   v_bed_type, v_admission_type
+    FROM   ADMISSION a
+    JOIN   BED b  ON b.bed_id  = a.BED_BED_ID
+    JOIN   ROOM r ON r.room_id = b.ROOM_room_id
+    WHERE  a.admission_type = 'EMERGENCY'
+      AND  ROWNUM = 1;
+ 
+    IF v_bed_type = 'ICU' THEN
+        DBMS_OUTPUT.PUT_LINE('TEST 6d PASSED: ICU bed assigned — room type = ' || v_bed_type);
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('TEST 6d INFO: Fallback bed assigned — room type = ' || v_bed_type);
+    END IF;
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('TEST 6d FAILED: ' || SQLERRM);
+END;
+/
+ 
+-- SUCCESS: Verify bill auto-generated
+DECLARE
+    v_bill_status VARCHAR2(20);
+    v_amount      NUMBER;
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('TEST 6e: Auto-bill generation check');
+    SELECT b.status, b.total_amount
+    INTO   v_bill_status, v_amount
+    FROM   BILLING b
+    JOIN   ADMISSION a ON a.admission_id = b.ADMISSION_ADMISSION_ID
+    WHERE  a.admission_type = 'EMERGENCY'
+      AND  ROWNUM = 1;
+ 
+    DBMS_OUTPUT.PUT_LINE('TEST 6e PASSED: Bill auto-generated — status = ' ||
+                          v_bill_status || '  amount = $' || v_amount);
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('TEST 6e FAILED: ' || SQLERRM);
+END;
+/
+ 
+-- FAILURE: Invalid department no doctors (expected ORA-20061)
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('TEST 6f: Invalid department no doctors');
+    book_emergency(
+        p_patient_id => 1,
+        p_dept_id    => 9999,
+        p_reason     => 'Test',
+        p_date       => TRUNC(SYSDATE)
+    );
+    DBMS_OUTPUT.PUT_LINE('TEST 6f FAILED: Should have errored.');
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE = -20061 THEN
+            DBMS_OUTPUT.PUT_LINE('TEST 6f PASSED: ORA-20061 - ' || SQLERRM);
+        ELSE
+            DBMS_OUTPUT.PUT_LINE('TEST 6f FAILED: Wrong error - ' || SQLERRM);
+        END IF;
+END;
+/
+ 
+ 
+-- =============================================================
 -- VERIFY: Final state after all tests
 -- =============================================================
  
@@ -277,3 +400,20 @@ SELECT * FROM (
     SELECT 'PAYMENT',                   COUNT(*)        FROM PAYMENT
 )
 ORDER BY tbl;
+ 
+-- Verify emergency appointments with admission and bill
+SELECT
+    a.appointment_id,
+    a.PATIENT_patient_id        AS patient_id,
+    a.status                    AS appt_status,
+    a.is_emergency,
+    adm.admission_type,
+    adm.status                  AS admission_status,
+    b.total_amount,
+    b.status                    AS bill_status
+FROM   APPOINTMENT a
+LEFT JOIN ADMISSION adm ON adm.PATIENT_PATIENT_ID = a.PATIENT_patient_id
+                       AND adm.admission_type      = 'EMERGENCY'
+LEFT JOIN BILLING b     ON b.ADMISSION_ADMISSION_ID = adm.admission_id
+WHERE  a.is_emergency = 'Y'
+ORDER BY a.appointment_id;
