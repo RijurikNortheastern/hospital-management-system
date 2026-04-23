@@ -191,7 +191,7 @@ hospital-management-system/
 │   ├── 02_insert_employees.sql      # 23 employees
 │   ├── 03_insert_patients.sql       # 200 patients
 │   ├── 04_insert_rooms_beds.sql     # 50 rooms, 75 beds
-│   ├── 05_insert_insurance.sql      # 6 insurers, 100 links
+│   ├── 05_insert_insurance.sql      # 6 insurers, 120 links
 │   ├── 06_insert_schedules.sql      # Doctor schedules
 │   ├── 07_insert_appointments.sql   # 50 appointments
 │   ├── 08_insert_admissions.sql     # 10 admissions + billing
@@ -286,7 +286,7 @@ hospital-management-system/
 - 50 Appointments
 - 10 Admissions (4 Active + 6 Discharged)
 - 50 Rooms with 75 Beds
-- 18 Bills + 14 Payments
+- 20 Admission Bills + 8 Appointment Bills + 14 Payments
 
 ## Users :
 | User | Role | Access |
