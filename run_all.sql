@@ -1,4 +1,3 @@
-
 -- =============================================================
 -- FILE   : run_all.sql
 -- PROJECT: Hospital Management System (DMDD 6210 - Table Turners)
@@ -12,7 +11,7 @@
 @DDL/03_sequences.sql
 @DDL/04_emergency_alter.sql
 
--- DML
+-- DML (base data only — no admissions yet)
 @DML/01_insert_departments.sql
 @DML/02_insert_employees.sql
 @DML/03_insert_patients.sql
@@ -20,11 +19,8 @@
 @DML/05_insert_insurance.sql
 @DML/06_insert_schedules.sql
 @DML/07_insert_appointments.sql
-@DML/08_insert_admissions.sql
-@DML/09_insert_billing_payments.sql
-@DML/10_Data_Load_Verification.sql
 
--- Procedures
+-- Procedures (must compile BEFORE DML/08 which calls book_emergency)
 @Procedures/01_book_appointment.sql
 @Procedures/02_cancel_appointment.sql
 @Procedures/03_reschedule_appointment.sql
@@ -32,8 +28,13 @@
 @Procedures/05_generate_bill.sql
 @Procedures/06_book_emergency.sql
 
--- Triggers
+-- Triggers (must compile BEFORE DML/08 which inserts admissions)
 @Triggers/01_trg_occupied_bed.sql
+
+-- DML (admissions + billing — runs AFTER procedures and triggers)
+@DML/08_insert_admissions.sql
+@DML/09_insert_billing_payments.sql
+@DML/10_Data_Load_Verification.sql
 
 -- Reports
 @Reports/01_daily_appointments.sql
