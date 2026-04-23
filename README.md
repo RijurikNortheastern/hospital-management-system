@@ -132,7 +132,7 @@ Centralized database for hospital operations covering:
                                        └─────────────────────┘
 ```
 
-## Emergency Module Flow:
+## Emergency Flow:
 ```
 ┌─────────────────────────────────────────────────┐
 │              book_emergency()                   │
@@ -184,7 +184,7 @@ hospital-management-system/
 │   ├── 01_create_tables.sql         # 16 tables with PKs
 │   ├── 02_constraints.sql           # UNIQUE, CHECK, FK constraints
 │   ├── 03_sequences.sql             # 16 sequences for PK generation
-│   └── 04_emergency_alter.sql       # Emergency module columns (idempotent)
+│   └── 04_emergency_alter.sql       # Emergency module columns 
 │
 ├── DML/
 │   ├── 01_insert_departments.sql    # 5 departments
