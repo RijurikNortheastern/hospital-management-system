@@ -232,9 +232,12 @@ hospital-management-system/
    - Run `DDL/02_constraints.sql`
    - Run `DDL/03_sequences.sql`
    - Run `DDL/04_emergency_alter.sql`
-   - Run `DML/01` through `DML/10` in order
+   - Run `DML/01` through `DML/07` in order
    - Run `Procedures/01` through `Procedures/06` in order
    - Run `Triggers/01_trg_occupied_bed.sql`
+   - Run `DML/08_insert_admissions.sql`
+   - Run `DML/09_insert_billing_payments.sql`
+   - Run `DML/10_Data_Load_Verification.sql`
    - Run `Reports/01` through `Reports/06`
    - Run `Tests/test_cases.sql`
 3. Connect as ADMIN: Run `Security/02_operator_grants.sql`
@@ -243,6 +246,10 @@ hospital-management-system/
 1. Connect as ADMIN: Run `Security/01_roles_and_grants.sql`
 2. Connect as hms_admin: Run `run_all.sql`
 3. Connect as ADMIN: Run `Security/02_operator_grants.sql`
+
+### Important Note:
+DML/08 calls book_emergency() procedure — 
+procedures must be compiled before DML/08 runs.
 
 ## Stored Procedures :
 | # | Procedure | Description |
