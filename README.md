@@ -7,7 +7,7 @@ Centralized database for hospital operations covering:
 - Appointment Management (selected module for Part 2)
 - Admission & Bed Management
 - Billing & Payments with Insurance bridge table
-- Emergency Module (auto ICU bed + auto admit + auto bill)
+- Emergency appointment (auto ICU bed + auto admit + auto bill)
 
 ## Database :
 
@@ -19,7 +19,7 @@ Centralized database for hospital operations covering:
 | CHECK Constraints | 13 | Business rule validations |
 | UNIQUE Constraints | 5 | Duplicate prevention |
 | Sequences | 16 | One per table for PK generation |
-| Stored Procedures | 6 | Business logic + emergency module |
+| Stored Procedures | 6 | Business logic + emergency  |
 | Triggers | 3 | Bed occupancy management (1 file) |
 | Reports | 6 | Operational, analytical + emergency |
 | Test Cases | 19 | All 19 passed  |
