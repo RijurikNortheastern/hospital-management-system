@@ -7,6 +7,7 @@ Centralized database for hospital operations covering:
 - Appointment Management (selected module for Part 2)
 - Admission & Bed Management
 - Billing & Payments with Insurance bridge table
+- Emergency Module (auto ICU bed + auto admit + auto bill)
 
 ## Database :
 
@@ -18,10 +19,10 @@ Centralized database for hospital operations covering:
 | CHECK Constraints | 13 | Business rule validations |
 | UNIQUE Constraints | 5 | Duplicate prevention |
 | Sequences | 16 | One per table for PK generation |
-| Stored Procedures | 5 | Business logic implementation |
+| Stored Procedures | 6 | Business logic + emergency module |
 | Triggers | 3 | Bed occupancy management (1 file) |
-| Reports | 5 | Operational and analytical reports |
-| Test Cases | 14 | All 14 passed  |
+| Reports | 6 | Operational, analytical + emergency |
+| Test Cases | 19 | All 19 passed  |
 
 ## ER Diagram :
 ![HMS ERD](Docs/HMS_ERD.png)
@@ -130,6 +131,47 @@ Centralized database for hospital operations covering:
              └─────────────────────┘   │ generate_bill()     │
                                        └─────────────────────┘
 ```
+
+## Emergency Module Flow:
+```
+┌─────────────────────────────────────────────────┐
+│              book_emergency()                   │
+│                                                 │
+│  Validation 1: Patient exists?  → ORA-20060     │
+│  Validation 2: Auto-find doctor in dept         │
+│               (skips doctors on vacation)       │
+│               → ORA-20061 if none available     │
+│  Validation 3: Auto-find available slot         │
+│               → ORA-20062 if no slot            │
+│  Validation 4: ICU bed priority                 │
+│               (fallback to any bed)             │
+│               → ORA-20063 if no bed             │
+└──────────────────────┬──────────────────────────┘
+                       │
+                       ▼
+        ┌──────────────────────────────┐
+        │   EMERGENCY APPOINTMENT      │
+        │   is_emergency = 'Y'         │
+        │   status = SCHEDULED         │
+        │   HISTORY → EMERGENCY_CREATED│
+        └──────────────┬───────────────┘
+                       │
+                       ▼
+        ┌──────────────────────────────┐
+        │   AUTO ADMISSION             │
+        │   admission_type = EMERGENCY │
+        │   ICU bed assigned           │
+        │   Trigger → BED occupied     │
+        └──────────────┬───────────────┘
+                       │
+                       ▼
+        ┌──────────────────────────────┐
+        │   AUTO BILL GENERATED        │
+        │   total_amount = $5000       │
+        │   status = PENDING           │
+        └──────────────────────────────┘
+```
+
 ## Project Structure:
 ```
 hospital-management-system/
@@ -141,7 +183,8 @@ hospital-management-system/
 ├── DDL/
 │   ├── 01_create_tables.sql         # 16 tables with PKs
 │   ├── 02_constraints.sql           # UNIQUE, CHECK, FK constraints
-│   └── 03_sequences.sql             # 16 sequences for PK generation
+│   ├── 03_sequences.sql             # 16 sequences for PK generation
+│   └── 04_emergency_alter.sql       # Emergency module columns (idempotent)
 │
 ├── DML/
 │   ├── 01_insert_departments.sql    # 5 departments
@@ -156,11 +199,12 @@ hospital-management-system/
 │   └── 10_Data_Load_Verification.sql  # PASS/FAIL verification
 │
 ├── Procedures/
-│   ├── 01_book_appointment.sql
-│   ├── 02_cancel_appointment.sql
-│   ├── 03_reschedule_appointment.sql
-│   ├── 04_admit_patient.sql
-│   └── 05_generate_bill.sql
+│   ├── 01_book_appointment.sql      # 6 validations
+│   ├── 02_cancel_appointment.sql    # 24hr rule
+│   ├── 03_reschedule_appointment.sql# Slot management
+│   ├── 04_admit_patient.sql         # Doctor + bed validation
+│   ├── 05_generate_bill.sql         # Insurance discount
+│   └── 06_book_emergency.sql        # Emergency: auto ICU + admit + bill
 │
 ├── Triggers/
 │   └── 01_trg_occupied_bed.sql      # 3 bed management triggers
@@ -170,10 +214,11 @@ hospital-management-system/
 │   ├── 02_doctor_schedule.sql
 │   ├── 03_bed_occupancy.sql
 │   ├── 04_revenue_report.sql
-│   └── 05_cancellation_stats.sql
+│   ├── 05_cancellation_stats.sql
+│   └── 06_emergency_report.sql      # Emergency appointments report
 │
 ├── Tests/
-│   └── test_cases.sql               # 14 test cases
+│   └── test_cases.sql               # 19 test cases — all passed ✅
 │
 └── run_all.sql                      # Master script
 ```
@@ -186,10 +231,11 @@ hospital-management-system/
    - Run `DDL/01_create_tables.sql`
    - Run `DDL/02_constraints.sql`
    - Run `DDL/03_sequences.sql`
+   - Run `DDL/04_emergency_alter.sql`
    - Run `DML/01` through `DML/10` in order
-   - Run `Procedures/01` through `Procedures/05` in order
+   - Run `Procedures/01` through `Procedures/06` in order
    - Run `Triggers/01_trg_occupied_bed.sql`
-   - Run `Reports/01` through `Reports/05`
+   - Run `Reports/01` through `Reports/06`
    - Run `Tests/test_cases.sql`
 3. Connect as ADMIN: Run `Security/02_operator_grants.sql`
 
@@ -206,6 +252,16 @@ hospital-management-system/
 | 03 | reschedule_appointment | Reschedules with slot management |
 | 04 | admit_patient | Admits patient with doctor validation |
 | 05 | generate_bill | Generates bill with insurance discount |
+| 06 | book_emergency | Emergency: auto doctor + ICU bed + admit + bill |
+
+## Emergency Module :
+| Feature | Description |
+|---------|-------------|
+| Auto doctor assignment | Finds available doctor in department, skips vacationing doctors |
+| ICU bed priority | Assigns ICU bed first, falls back to any available bed |
+| Auto admission | Automatically admits patient with admission_type = EMERGENCY |
+| Auto bill | Auto-generates $5000 bill with status = PENDING |
+| Error codes | ORA-20060 / ORA-20061 / ORA-20062 / ORA-20063 |
 
 ## Triggers :
 | Trigger | Type | Description |
@@ -213,6 +269,16 @@ hospital-management-system/
 | trg_occupied_bed | BEFORE INSERT | Blocks admission to occupied bed |
 | trg_mark_bed_occupied | AFTER INSERT | Marks bed occupied after admission |
 | trg_release_bed_on_discharge | AFTER UPDATE | Releases bed when patient discharged |
+
+## Reports :
+| # | Report | Description |
+|---|--------|-------------|
+| 01 | Daily Appointments | Today's appointments with patient and doctor details |
+| 02 | Doctor Schedule | Weekly schedule with vacation dates |
+| 03 | Bed Occupancy | Real-time bed status by room type |
+| 04 | Revenue Report | Monthly revenue by insurance provider |
+| 05 | Cancellation Stats | Cancellation rates by doctor and department |
+| 06 | Emergency Report | Emergency appointments with admission and bill details |
 
 ## Data Requirements :
 - 200 Patients (180 adults + 20 minors with guardians)
