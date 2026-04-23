@@ -1,3 +1,4 @@
+
 -- =============================================================
 -- FILE   : run_all.sql
 -- PROJECT: Hospital Management System (DMDD 6210 - Table Turners)

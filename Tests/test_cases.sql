@@ -162,10 +162,11 @@ END;
 -- =============================================================
  
 -- FAILURE: Bed already occupied (expected ORA-20042)
+-- TEST 4a: Bed already occupied (expected ORA-20042)
 BEGIN
     admit_patient(
         p_patient_id  => 5,
-        p_bed_id      => 1,
+        p_bed_id      => 1,   -- ← this is already occupied by regular admission 
         p_employee_id => 1,
         p_reason      => 'Fever admission'
     );
@@ -417,3 +418,8 @@ LEFT JOIN ADMISSION adm ON adm.PATIENT_PATIENT_ID = a.PATIENT_patient_id
 LEFT JOIN BILLING b     ON b.ADMISSION_ADMISSION_ID = adm.admission_id
 WHERE  a.is_emergency = 'Y'
 ORDER BY a.appointment_id;
+
+SELECT admission_id, BED_BED_ID, status, admission_type
+FROM ADMISSION
+WHERE status = 'ACTIVE'
+ORDER BY admission_id;
